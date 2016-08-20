@@ -37,7 +37,7 @@ double *  Evaluation::getMaxCpePerEntityPair(Data *data)
 }
 
 
-double * sortArray(double *cpeEntityPairs,int SIZE)
+double * Evaluation::sortArray(double *cpeEntityPairs,int SIZE)
 {
 	double *sortedCpeEntityPairs=(double * ) malloc((SIZE)*sizeof(double));
 	std::copy(cpeEntityPairs,cpeEntityPairs + SIZE, sortedCpeEntityPairs);
@@ -76,6 +76,37 @@ double Evaluation::findBestMacroThreshold(double *cpeEntityPairs,Data *data)
 	return bestThreshold;
 }
 
+double Evaluation::findBestMacroThreshold_BasedOnMention(double *cpeEntityPairs,Data *data)
+{
+	double *thresholdValues= (double * ) malloc((data->entityCount + 1)*sizeof(double)); //+1 coz to include both borders
+
+	double *sortedCpeEntityPairs= sortArray(cpeEntityPairs,data->entityCount);
+
+	int entityPairsIterator=0;
+	thresholdValues[entityPairsIterator]=sortedCpeEntityPairs[0]-0.01;
+	for(entityPairsIterator=1; entityPairsIterator<data->entityCount ;  entityPairsIterator++)
+	{
+		thresholdValues[entityPairsIterator]= (sortedCpeEntityPairs[entityPairsIterator-1]+sortedCpeEntityPairs[entityPairsIterator])/2;
+	}
+	thresholdValues[entityPairsIterator]= sortedCpeEntityPairs[entityPairsIterator -1]+0.01;
+
+	double maxFscore=0;
+	double bestThreshold=0;
+	for(int iterator=0;iterator<data->entityCount+1;iterator++)
+	{
+		int *predictedEntityPairsLabel = findLabelsBasedOnMentions(data->cpeMentions,thresholdValues[iterator],data);
+		double tempFscore=getFscore(predictedEntityPairsLabel,data->trueEntityLabels,data);
+		if(tempFscore>maxFscore)
+		{
+			maxFscore=tempFscore;
+			bestThreshold= thresholdValues[iterator];
+		}
+	}
+
+	return bestThreshold;
+}
+
+
 
 
 int * Evaluation::findLabelsAndKValues(double *cpeMentions,double threshold,Data *data,int *k)
@@ -110,7 +141,7 @@ int * Evaluation::findLabelsAndKValues(double *cpeMentions,double threshold,Data
 double * Evaluation::getKForEntityPairs(double *cpeMentions,double threshold,Data *data)
 {
 
-	double *k = (double * ) malloc(sizeof(data->entityCount)*sizeof(double));
+	double *k = (double * ) malloc(data->entityCount*sizeof(double));
 	int mentionsIterator=0;
 	for(int entityPairsIterator=0; entityPairsIterator<data->entityCount ;  entityPairsIterator++)
 	{
@@ -133,6 +164,33 @@ double * Evaluation::getKForEntityPairs(double *cpeMentions,double threshold,Dat
 
 	return k;
 }
+
+
+double * Evaluation::getKForEntityPairs(Data *data,double threshold)
+{
+	double *cpeMentions= data->cpeMentions;
+	double *k = (double * ) malloc(data->entityCount*sizeof(double));
+	int mentionsIterator=0;
+	for(int entityPairsIterator=0; entityPairsIterator<data->entityCount ;  entityPairsIterator++)
+	{
+		int iterator=0;
+		int ktemp=0;
+
+		while(iterator<data->mentionsPerEntityPairCount[entityPairsIterator])
+		{
+			if(cpeMentions[mentionsIterator]>threshold)
+			{
+				ktemp++;
+			}
+			iterator++;
+			mentionsIterator++;
+		}
+		cout<< ktemp<<"  "<<data->mentionsPerEntityPairCount[entityPairsIterator]<<endl;
+		k[entityPairsIterator]=(double)ktemp/data->mentionsPerEntityPairCount[entityPairsIterator];	
+	}
+	return k;
+}
+
 
 int * Evaluation::findLabelsBasedOnMentions(double *cpeMentions,double threshold,Data *data)
 {

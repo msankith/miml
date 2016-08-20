@@ -64,15 +64,23 @@ int main()
 	Evaluation e = Evaluation();
 
 	double *cpeEntityPairs= e.getMaxCpePerEntityPair(&randomData);
-
 	double threshold= e.findBestMacroThreshold(cpeEntityPairs,&randomData);
+	double *k = e.getKForEntityPairs(&randomData,threshold);
 
+	double *sortedEntityPairs = e.sortArray(cpeEntityPairs,randomData.entityCount);
 	int i=0;
 	while(i<randomData.entityCount)
-		cout<<cpeEntityPairs[i++]<<" ";
+		cout<<sortedEntityPairs[i++]<<" ";
 	cout<<endl;
 	
-	cout<<"Best threshold "<< threshold;
+	cout<<"k values"<<endl;
+	i=0;
+	while(i<randomData.entityCount)
+		cout<<k[i++]<<" ";
+	cout<<endl;
+	
+
+	cout<<"Best threshold "<< threshold<<"\t"<<endl<<endl<<endl;
 
 	// int mentionsEntityPairCount[]={2,3,2};
 	// int trueLabels[]={1,0,1};
