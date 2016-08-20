@@ -15,30 +15,23 @@ class Evaluation {
 
 	Evaluation();
 
-	double *  getMaxCpePerEntityPair(Data *data);
+	double * sortArray(const double *cpeEntityPairs,int SIZE);
+	double *  getMaxCpePerEntityPair(const Data *data);
+	double  findBestMacroThreshold(const double *cpeEntityPairs,const Data *data);
+	double * getKForEntityPairs(const Data *data,double Threshold);
+	double getFscore(const int *predictedEntityLabels,const int *entityLabels,const Data *data);
+	int * findLabelsBasedOnEntity(const double *cpeEntityPairs,double bestThreshold,const Data *data);
 	
-	double *  getMaxCpePerEntityPair(double *cpeMentions,int *mentionsEntityPairCount);
-	//cpeEntityPairs <--  getMaxCpePerEntityPair(cpeMentions,entityPairsCount)
-	
-	double  findBestMacroThreshold(double *cpeEntityPairs,Data *data);
-	//bestThreshold <--  findBestMacroThreshold(cpeEntityPairs);
-	double findBestMacroThreshold_BasedOnMention(double *cpeEntityPairs,Data *data);
-
-	
-	double * getKForEntityPairs(double *cpeMentions,double currentThreshold,Data *data);
-	//K <--  getKForEntityPairs(cpeMentions,currentThreshold);
-	double * getKForEntityPairs(Data *data,double Threshold);
-	
-	int * findLabelsBasedOnMentions(double *cpeMentionsTestData,double bestThreshold,Data *data);
-	
-	
-	int * findLabelsBasedOnEntity(double *cpeEntityPairs,double bestThreshold,Data *data);
-	
-	int * findLabelsAndKValues(double *cpeMentionsTestData,double bestThreshold,Data *data,int *k);
 	//predictedEntityLabels <-- findLabels(cpeMentionsTestData,bestThreshold);
 	
-	double getFscore(int *predictedEntityLabels, int *entityLabels,Data *data);
 	//F_score <-- getFscore(predictedEntityLabels,entityLabels);
 
-	double * sortArray(double *cpeEntityPairs,int SIZE);
+
+	/* Experimental functions */
+	double findBestMacroThreshold_BasedOnMention(double *cpeEntityPairs,Data *data);
+	int * findLabelsBasedOnMentions(const double *cpeMentionsTestData,double bestThreshold,const Data *data);
+	int * findLabelsAndKValues(const double *cpeMentionsTestData,double bestThreshold,const Data *data,int *k);
+	
+
+
 };
