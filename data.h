@@ -18,6 +18,6 @@ public:
 	
 
 
-
+	Data();
 	Data(int mentionsCount,int EntityCount,double *cpeMentions, int *mentionsEntityPairCount,int *trueLabels);
 };
