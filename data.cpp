@@ -1,6 +1,8 @@
 #include"data.h"
 #include<stdlib.h>
-
+#include <fstream>
+#include <cstring>
+#define Malloc(type,n) (type *)malloc((n)*sizeof(type))
 using namespace std;
 
 
@@ -20,6 +22,74 @@ int randomNumber(int minValue,int maxValue)
 {
 	//minValue=minValue==0?1:minValue;
 	return rand()%(maxValue-minValue)+ minValue;
+}
+
+
+static char* line;
+static int max_line_len=1024;
+// static char* readline(ifstream *input)
+// {
+// 	int len;
+
+// 	if(fgets(line,max_line_len,input) == NULL)
+// 		return NULL;
+
+// 	while(strrchr(line,'\n') == NULL)
+// 	{
+// 		max_line_len *= 2;
+// 		line = (char *) realloc(line,max_line_len);
+// 		len = (int) strlen(line);
+// 		if(fgets(line+len,max_line_len-len,input) == NULL)
+// 			break;
+// 	}
+// 	return line;
+// }
+
+Data::Data(string fname)
+{
+	ifstream inFile;
+    inFile.open(fname.c_str());
+    string s;
+    int numberOfEntites,numberOfRelations;
+	inFile>>numberOfEntites;
+	inFile>>numberOfRelations;
+	cout<<numberOfEntites<<"=========="<<numberOfRelations<<endl<<endl;
+
+	entityAllLabels=(int **)malloc(sizeof(int **)*numberOfRelations);
+
+	for(int i=0;i<numberOfRelations;i++)
+		entityAllLabels[i]=(int *)malloc(sizeof(int *)*numberOfEntites);
+
+	// int relations;
+
+	while(!inFile.eof())
+	{
+		int relations;
+		// getline(inFile,s);
+		// cout<<"----"<<s<<endl;
+		inFile>>relations;	
+		cout<<"Number of relations "<<relations<<endl;
+		for(int temp=0;temp<relations;temp++)
+		{
+			int rel;
+			inFile>>rel;
+			//cout<<rel;
+
+		}
+		int mentions;
+		inFile>>mentions;
+		cout<<"Number of mentions "<<mentions<<endl;
+		for(int temp=0; temp<mentions;temp++)
+		{
+
+			string men;
+			getline(inFile,s);
+		
+			//inFile>>men;
+			cout<<s<<endl;
+		}
+		cout<<s<<endl;
+	}
 }
 
 Data::Data()

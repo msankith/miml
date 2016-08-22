@@ -1,0 +1,57 @@
+
+
+
+/*==============================================================================================================================*/
+
+
+
+struct feature_node **trainingMentionsFeatures;
+int trainingMentionsPerEntityPair[#entities];
+int trainingLabelMatrix[#relations][#entities];
+
+struct feature_node **testingMentionsFeatures;
+int testingMentionsPerEntityPair[#entities];
+int testingLabelMatrix[#relations][#entities];
+
+
+main()
+{
+	config = new Config();
+	loadData(trainingDatasetFile,trainingMentionsFeature,trainingMentionPerEntityPair,trainingLableMarix);
+	loadData(testingDatasetFile,testingMentionsFeature,testingMentionPerEntityPair,testingLableMarix);
+	double kValues[#entities]= setDefault(kValues);
+	foreach relationNumber=0:#relation
+		*******threading***** 
+
+
+		data[relationNumber]= new Data(const trainingMentionsFeatures,trainingLabelMatrix[relationNumber]);
+		foreach Epoch:
+		
+			data[relationNumber].mentionsLabel=setMentionLabels(kValues,trainingMentionsPerEntityPair)
+			model <- liblinearTrain(data[relationNumber].problem,config.parameter);
+			data[relationNumber].cpeMentions <- getLiblinearCpe(model,const trainingMentions); 
+			Evaluation e = Evaluation();
+			double *cpeEntityPairs= e.getMaxCpePerEntityPair(&data[relationNumber],trainingMentionsPerEntityPair);
+		    double threshold= e.findBestMacroThreshold(cpeEntityPairs,data[relationNumber],trainingMentionsPerEntityPair,);
+		    kValues = e.getKForEntityPairs(data[relationNumber],threshold,trainingMentionsPerEntityPair);
+
+		endFor #Epoch
+
+
+		testingData[relationNumber]=new Data(const testingMentionsFeatures,testingLabelMatrix[relationNumber]);
+		cpeTestingMentions <- getLiblinearCpe(model,const trainingMentions); 
+		Evaluation e = Evaluation();
+		FScore[relationNumber] = e.getFScore(cpeTestingMentions,threshold,testingLabelMatrix[relationNumber]);
+
+		*******Threading-ends********
+
+	endFor
+}
+
+
+
+/************************To Store ******************************/
+foreach relation:
+	Best Model along with its param
+	testingDatafscore 
+	threshold

@@ -58,29 +58,30 @@ int main()
 	
 	srand (time(NULL));
 
-	Data randomData= Data();
-	print(&randomData);
+	// Data::entityAllLabels;// = (int *)malloc(sizeof(int *)* 1);
+	Data randomData= Data("dataset/reidel_trainSVM.data");
+	// print(&randomData);
 
-	Evaluation e = Evaluation();
+	// Evaluation e = Evaluation();
 
-	double *cpeEntityPairs= e.getMaxCpePerEntityPair(&randomData);
-	double threshold= e.findBestMacroThreshold(cpeEntityPairs,&randomData);
-	double *k = e.getKForEntityPairs(&randomData,threshold);
+	// double *cpeEntityPairs= e.getMaxCpePerEntityPair(&randomData);
+	// double threshold= e.findBestMacroThreshold(cpeEntityPairs,&randomData);
+	// double *k = e.getKForEntityPairs(&randomData,threshold);
 
-	double *sortedEntityPairs = e.sortArray(cpeEntityPairs,randomData.entityCount);
-	int i=0;
-	while(i<randomData.entityCount)
-		cout<<sortedEntityPairs[i++]<<" ";
-	cout<<endl;
+	// double *sortedEntityPairs = e.sortArray(cpeEntityPairs,randomData.entityCount);
+	// int i=0;
+	// while(i<randomData.entityCount)
+	// 	cout<<sortedEntityPairs[i++]<<" ";
+	// cout<<endl;
 	
-	cout<<"k values"<<endl;
-	i=0;
-	while(i<randomData.entityCount)
-		cout<<k[i++]<<" ";
-	cout<<endl;
+	// cout<<"k values"<<endl;
+	// i=0;
+	// while(i<randomData.entityCount)
+	// 	cout<<k[i++]<<" ";
+	// cout<<endl;
 	
 
-	cout<<"Best threshold "<< threshold<<"\t"<<endl<<endl<<endl;
+	// cout<<"Best threshold "<< threshold<<"\t"<<endl<<endl<<endl;
 
 	// int mentionsEntityPairCount[]={2,3,2};
 	// int trueLabels[]={1,0,1};
