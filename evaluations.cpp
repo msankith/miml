@@ -60,7 +60,7 @@ double Evaluation::findBestMacroThreshold(const double *cpeEntityPairs,const Dat
 	double bestThreshold=0;
 	for(int iterator=0;iterator<data->entityCount+1;iterator++)
 	{
-		int *predictedEntityPairsLabel = findLabelsBasedOnEntity(cpeEntityPairs,thresholdValues[iterator],data);
+		double *predictedEntityPairsLabel = findLabelsBasedOnEntity(cpeEntityPairs,thresholdValues[iterator],data);
 		double tempFscore=getFscore(predictedEntityPairsLabel,data->trueEntityLabels,data);
 		if(tempFscore>maxFscore)
 		{
@@ -73,9 +73,9 @@ double Evaluation::findBestMacroThreshold(const double *cpeEntityPairs,const Dat
 }
 
 
-int * Evaluation::findLabelsBasedOnEntity(const double *cpeMentions,double threshold,const Data *data)
+double * Evaluation::findLabelsBasedOnEntity(const double *cpeMentions,double threshold,const Data *data)
 {
-	int *entityPairsLabel = (int * ) malloc(data->entityCount*sizeof(int));
+	double *entityPairsLabel = (double * ) malloc(data->entityCount*sizeof(double));
 	int mentionsIterator=0;
 	for(int entityPairsIterator=0; entityPairsIterator<data->entityCount ;  entityPairsIterator++)
 	{
@@ -88,7 +88,7 @@ int * Evaluation::findLabelsBasedOnEntity(const double *cpeMentions,double thres
 	return entityPairsLabel;
 }
 
-double Evaluation::getFscore(const int *predictedEntityLabels,const int *entityLabels,const Data *data)
+double Evaluation::getFscore(const double *predictedEntityLabels,const double *entityLabels,const Data *data)
 {
 	double precision;
 	double recall;
@@ -128,6 +128,18 @@ double Evaluation::getFscore(const int *predictedEntityLabels,const int *entityL
 
 }
 
+double Evaluation::getFScore(Data *data,double threshold)
+{
+	double *entityCpeMentions = getMaxCpePerEntityPair(data);	
+	//double *predictedEntityLabels = findLabelsBasedOnEntity(entityCpeMentions,threshold,data);
+	double *predictedEntityPairsLabel = findLabelsBasedOnEntity(entityCpeMentions,threshold,data);
+	double tempFscore=getFscore(predictedEntityPairsLabel,data->trueEntityLabels,data);
+
+	return tempFscore;
+	///return getFScore(predictedEntityLabels,data->trueEntityLabels,data);
+
+}
+
 
 
 double * Evaluation::getKForEntityPairs(const Data *data,double threshold)
@@ -156,9 +168,9 @@ double * Evaluation::getKForEntityPairs(const Data *data,double threshold)
 }
 
 
-int * Evaluation::findLabelsBasedOnMentions(const double *cpeMentions,double threshold,const Data *data)
+double * Evaluation::findLabelsBasedOnMentions(const double *cpeMentions,double threshold,const Data *data)
 {
-	int *entityPairsLabel = (int * ) malloc(data->entityCount*sizeof(int));
+	double *entityPairsLabel = (double * ) malloc(data->entityCount*sizeof(double));
 	int mentionsIterator=0;
 	for(int entityPairsIterator=0; entityPairsIterator<data->entityCount ;  entityPairsIterator++)
 	{
@@ -238,7 +250,7 @@ double Evaluation::findBestMacroThreshold_BasedOnMention(double *cpeEntityPairs,
 	double bestThreshold=0;
 	for(int iterator=0;iterator<data->entityCount+1;iterator++)
 	{
-		int *predictedEntityPairsLabel = findLabelsBasedOnMentions(data->cpeMentions,thresholdValues[iterator],data);
+		double *predictedEntityPairsLabel = findLabelsBasedOnMentions(data->cpeMentions,thresholdValues[iterator],data);
 		double tempFscore=getFscore(predictedEntityPairsLabel,data->trueEntityLabels,data);
 		if(tempFscore>maxFscore)
 		{

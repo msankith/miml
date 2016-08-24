@@ -25,9 +25,10 @@ main()
 
 
 		data[relationNumber]= new Data(const trainingMentionsFeatures,trainingLabelMatrix[relationNumber]);
+		
 		foreach Epoch:
 		
-			data[relationNumber].mentionsLabel=setMentionLabels(kValues,trainingMentionsPerEntityPair)
+			data[relationNumber].mentionsLabel=setMentionLabels(kValues,trainingMentionsPerEntityPair) //let setMentionLabel be function in data class
 			model <- liblinearTrain(data[relationNumber].problem,config.parameter);
 			data[relationNumber].cpeMentions <- getLiblinearCpe(model,const trainingMentions); 
 			Evaluation e = Evaluation();
