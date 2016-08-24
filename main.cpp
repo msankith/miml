@@ -5,6 +5,8 @@
 #include "linear.h"
 #include <cmath>
 #include <sstream>
+#include <stdlib.h>
+#include<string.h>
 #include "extraFunctions.h"
 
 using namespace std;
@@ -30,7 +32,7 @@ int testingMentionsCount;
 int numberOfRelations=1;
 
 void loadData(string fname,struct feature_node **vector,int *mentionsPerEntityPair,double **labelMatrix,int *entityPairsCount,int *mentionsCount);
-void coreLogic(int relationNumber,Config *config,Data *data,int *mentionsPerEntityPair,double *kValues);
+void coreLogic(int relationNumber,Config *config,Data *data,double *kValues);
 double *getCpe(struct model *relationModel,Data *data);
 Data * loadData(string fname);
 
@@ -48,23 +50,23 @@ int main()
 	// struct problem prob;
 
 
-	Data *dataset = loadData("dataset/reidel_trainSVM.data");
+	Data *dataset = loadData("dataset/reidel_trainSVM.data_bck");
 	cout<<"End of loading"<<endl;
 	dataset->myPrint();
 	//myPrint(trainingMentionsPerEntityPair,4);
-	for(int relationNumber=0;relationNumber<numberOfRelations;relationNumber++)
+	for(int relationNumber=0;relationNumber<dataset->numberOfRelations;relationNumber++)
 	{
 		double *kValues = (double *)malloc(sizeof(double)*dataset->entityCount);
 		//Data *data = new Data(trainingMentionsFeatures,trainingLabelMatrix[relationNumber],trainingMentionsPerEntityPair,trainingEntityPairsCount,trainingMentionsCount); 
-		Data *data = new Data(relationNumber,dataset);
+		//Data *data = new Data(relationNumber,dataset);
 		// CPE Mentions should be intiailzed to constant value
-		coreLogic(relationNumber,&config,data,trainingMentionsPerEntityPair,kValues);
+		coreLogic(relationNumber,&config,dataset,kValues);
 	}
 	
 }
 
 
-void coreLogic(int relationNumber,Config *config,Data *data,int *mentionsPerEntityPair,double *kValues)
+void coreLogic(int relationNumber,Config *config,Data *data,double *kValues)
 {
 	//Data data = new Data(mentionsFeatureVector,labelMatrix[relationNumber]);
 	double bestThreshold;
@@ -77,18 +79,23 @@ void coreLogic(int relationNumber,Config *config,Data *data,int *mentionsPerEnti
 		struct model *relationModel;
 		Evaluation eval = Evaluation();		
 		double threshold;
+		double *cpeMentions=(double *) malloc(sizeof(double)*data->mentionsCount);
+		memset(cpeMentions,0.5,sizeof(double)*data->mentionsCount);
 		for(int epoch=0;epoch<config->numberOfEpochs;epoch++)
 		{
-			data->setMentionLabels(kValues,mentionsPerEntityPair);
+			data->setMentionLabels(kValues,cpeMentions);
 			relationModel= train(&data->prob,&config->param);
-			data->cpeMentions= getCpe(relationModel,data); 
-			double *cpeEntityPairs = eval.getMaxCpePerEntityPair(data);
-			threshold= eval.findBestMacroThreshold(cpeEntityPairs,data);
-			kValues= eval.getKForEntityPairs(data,threshold);
+			cpeMentions= getCpe(relationModel,data); 
+			double *cpeEntityPairs = eval.getMaxCpePerEntityPair(data,cpeMentions);
+			threshold= eval.findBestMacroThreshold(cpeEntityPairs,data,relationNumber);
+			kValues= eval.getKForEntityPairs(data,threshold,cpeMentions);
 		}
-		struct Data *testingData = new Data(testingMentionsFeatures,testingLabelMatrix[relationNumber],testingMentionsPerEntityPair,testingEntityPairsCount,testingMentionsCount) ;
-		testingData->cpeMentions = getCpe(relationModel,testingData);
-		double fScore= eval.getFScore(testingData,threshold); 
+		//struct Data *testingData = new Data(testingMentionsFeatures,testingLabelMatrix[relationNumber],testingMentionsPerEntityPair,testingEntityPairsCount,testingMentionsCount) ;
+		cout<<"-------------END OF TRAINING------------  "<<endl;
+		Data *testingData = loadData("dataset/reidel_trainSVM.data");
+		cpeMentions = getCpe(relationModel,testingData);
+		double fScore= eval.getFScore(testingData,threshold,cpeMentions,relationNumber); 
+		cout<<"Relation Number \t"<<relationNumber<<fScore<<endl;
 		if(fScore>bestFScore)
 		{
 			bestFScore=fScore;

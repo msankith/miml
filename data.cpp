@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include <fstream>
 #include <cstring>
+#include <string.h>
 #include<cmath>
 
 #define Malloc(type,n) (type *)malloc((n)*sizeof(type))
@@ -39,19 +40,20 @@ Data::Data(int relationNumber,const Data *data)
 {
 	this-> mentionsCount= data->mentionsCount;
 	this->entityCount= data->entityCount;
+	this->mentionsPerEntityPairCount;
 }
 
 Data::Data(struct feature_node **features,double *labels,int *mentionsCountPerEntityPair,int pairsCount,int mentionsCount)
 {
 	this->prob.x= features;
 	this->mentionsPerEntityPairCount=mentionsCountPerEntityPair;
-	this->trueEntityLabels=labels;
+	//this->trueEntityLabels=labels;
 	this->entityCount=entityCount;
 	this->mentionsCount=mentionsCount;
 
 	this->prob.y = (double *)malloc(sizeof(double)*mentionsCount);
-	this->cpeMentions=(double *)malloc(sizeof(double)*mentionsCount);
-	memset (this->cpeMentions,0.5,sizeof(double)*mentionsCount);
+	//this->cpeMentions=(double *)malloc(sizeof(double)*mentionsCount);
+	//memset (this->cpeMentions,0.5,sizeof(double)*mentionsCount);
 
 //CPE Mentions should be intiailzed to constant value
 }
@@ -89,10 +91,11 @@ int probabilityChooser(double key,double *list,int start,int end,int count,int m
 }
 
 //This function can be made more effective
-void Data::setMentionLabels(double *kValues,int *mentionsPerEntityPair)
+void Data::setMentionLabels(double *kValues,double *cpeMentions)
 {
+	int *mentionsPerEntityPair= this->mentionsPerEntityPairCount;
 	srand (time(NULL));
-	int maxSize=50;
+	int maxSize=500;
 	double *tempArray =(double *)malloc(sizeof(double)*maxSize); // Size can be reduced. //Cummulative CPE ll be scored
 	double *randomTillNow =(double *)malloc(sizeof(double)*maxSize); // to track which all selected
 	double *itrIncrementor =(double *)malloc(sizeof(double)*maxSize); // for recaluclating the adjusted iterative pointer after removing the selected mention from the list 
@@ -368,8 +371,9 @@ Data::Data()
 	mentionsCount=randomNumber(30,40);
 	entityCount=randomNumber(7,14);
 	mentionsPerEntityPairCount= (int *)malloc(sizeof(int)*entityCount);
-	trueEntityLabels=(double *)malloc(sizeof(double)*entityCount);
-	cpeMentions=(double *)malloc(sizeof(double)*mentionsCount);
+	double *trueEntityLabels=(double *)malloc(sizeof(double)*entityCount);
+	
+	double * cpeMentions=(double *)malloc(sizeof(double)*mentionsCount);
 	int sum=0;
 	int i;
 	for(i=0;i<entityCount-1;i++)

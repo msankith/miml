@@ -52,14 +52,11 @@ struct model
 class Data {
 
 public:
-	int **entityAllLabels;	
-	double **featureVector;
-	double *trueEntityLabels;
-
+	
 	int mentionsCount;
 	int entityCount;
 	int *mentionsPerEntityPairCount;
-	double *cpeMentions;
+
 	int numberOfRelations;
 	double **allLabels; //n*m array , consists of all relation values;
 	struct problem prob;
@@ -74,6 +71,6 @@ public:
 	//Data(string fname,int a);
 	
 	
-	void setMentionLabels(double *kValues,int *mentionsPerEntityPair);
+	void setMentionLabels(double *kValues,double *cpeMentions);
 	//Data(int mentionsCount,int EntityCount,double *cpeMentions, int *mentionsEntityPairCount,int *trueLabels);
 };
