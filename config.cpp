@@ -8,7 +8,7 @@ using namespace std;
 Config::Config()
 {
 	cout<<"Setting Configuration"<<endl;
-	double initialKValues[]={1,0.2};
+	double initialKValues[]={1};
 	numberOfEpochs = 1;
 	trainingFileName = "someFileName";
 	testingFileName =  "";

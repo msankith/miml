@@ -10,6 +10,37 @@ using namespace std;
 
 
 
+void Data::myPrint()
+{
+
+// int mentionsCount;
+// 	int entityCount=;
+// 	int *mentionsPerEntityPairCount;
+// 	double *cpeMentions;
+// 	int numberOfRelations;
+	
+// 	struct problem prob;
+
+
+
+	cout<<"Number of mentions :" << mentionsCount<<endl;
+	cout<<"Number of entity :" << entityCount<<endl;
+	cout<<"Number of number of relations :" << numberOfRelations<<endl;
+	cout<<"Number of features :" << prob.n<<endl;
+
+	cout<<"Feature index "<<prob.x[18][21].index<<":"<<prob.x[18][21].value<<endl;
+	cout<<"Feature index "<<prob.x[18][22].index<<":"<<prob.x[18][22].value<<endl;
+
+}
+
+
+
+Data::Data(int relationNumber,const Data *data)
+{
+	this-> mentionsCount= data->mentionsCount;
+	this->entityCount= data->entityCount;
+}
+
 Data::Data(struct feature_node **features,double *labels,int *mentionsCountPerEntityPair,int pairsCount,int mentionsCount)
 {
 	this->prob.x= features;

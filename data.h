@@ -60,13 +60,17 @@ public:
 	int entityCount;
 	int *mentionsPerEntityPairCount;
 	double *cpeMentions;
-	
+	int numberOfRelations;
+	double **allLabels; //n*m array , consists of all relation values;
 	struct problem prob;
 
 
 	Data();
 	Data(string filename);
+	Data(int relationNumber,const Data *data);
 	Data(struct feature_node **features,double *labels,int *mentionsCountPerEntityPair,int pairsCount,int mentionsTotalCount);
+	
+	void myPrint();
 	//Data(string fname,int a);
 	
 	
