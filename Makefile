@@ -1,4 +1,4 @@
-LIBS = /home/ankith/learning/mtp/code/liblinear/blas/blas.a
+LIBS = blas/blas.a
 
 all: 
 	# g++  -g3 -Wall -fmessage-length=0  -o miml *.cpp
