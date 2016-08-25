@@ -35,7 +35,7 @@ int main()
 
  void coreLogic(int relationNumber,const Config *config,const Data *data,double *kValues)
  {
- 	cout<<endl<<endl<<"--------------------Current Relation Number "<<relationNumber<<" ---------------------\n\n"<<endl;
+ 	cout<<endl<<"--------------------Current Relation Number "<<relationNumber<<" ---------------------"<<endl;
  	double *yLabels = (double *)malloc(sizeof(double)*data->mentionsCount);
  	double *cpeMentions=(double *) malloc(sizeof(double)*data->mentionsCount);
  	struct problem libProb = data->prob;
@@ -61,15 +61,18 @@ int main()
 			threshold= eval.findBestMacroThreshold(cpeEntityPairs,data,relationNumber);
 			free(kValues);
 			kValues= eval.getKForEntityPairs(data,threshold,cpeMentions,relationNumber);
-			cout<<"Best Threshold\t"<<threshold<<" on relation "<<relationNumber<<endl;
+			//cout<<"Best Threshold\t"<<threshold<<" on relation "<<relationNumber<<endl;
 			free(cpeEntityPairs);
 		}
 		free(cpeMentions);
-		cout<<"-------------END OF TRAINING------------  "<<endl;
+		
 		Data *testingData = loadData("dataset/reidel_trainSVM.data");
 		cpeMentions = getCpe(relationModel,testingData);
 		double fScore= eval.getFScore(testingData,threshold,cpeMentions,relationNumber); 
+		cout<<"Best Threshold\t"<<threshold<<endl;
 		cout<<"Relation Number \t"<<relationNumber<<"\t Fscore\t"<<fScore<<endl;
+
+		cout<<"\n-----------END OF ONE RELATION--------------"<<endl;
 				
  	}
 

@@ -16,7 +16,6 @@ void initializer(double *arr,int size,double val){
 void Data::setMentionLabels(const double *kValues,const double *cpeMentions,double *yLabels) const
 {
 	int *mentionsPerEntityPair= this->mentionsPerEntityPairCount;
-	cout<<"Mentions "<<this->mentionsCount<<endl;
 	srand (time(NULL));
 	
 	int max=0;
@@ -25,7 +24,6 @@ void Data::setMentionLabels(const double *kValues,const double *cpeMentions,doub
 			max=mentionsPerEntityPair[z];
 	}
 	int maxSize=max;
-	cout<<"Max mentions per entity pair\t"<<max<<endl;
 	double *tempArray =(double *)malloc(sizeof(double)*maxSize); // Size can be reduced. //Cummulative CPE ll be scored
 	double *randomTillNow =(double *)malloc(sizeof(double)*maxSize); // to track which all selected
 	double *itrIncrementor =(double *)malloc(sizeof(double)*maxSize); // for recaluclating the adjusted iterative pointer after removing the selected mention from the list 
