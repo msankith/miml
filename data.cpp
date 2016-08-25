@@ -95,7 +95,7 @@ void Data::setMentionLabels(double *kValues,double *cpeMentions)
 {
 	int *mentionsPerEntityPair= this->mentionsPerEntityPairCount;
 	srand (time(NULL));
-	int maxSize=500;
+	int maxSize=3000;
 	double *tempArray =(double *)malloc(sizeof(double)*maxSize); // Size can be reduced. //Cummulative CPE ll be scored
 	double *randomTillNow =(double *)malloc(sizeof(double)*maxSize); // to track which all selected
 	double *itrIncrementor =(double *)malloc(sizeof(double)*maxSize); // for recaluclating the adjusted iterative pointer after removing the selected mention from the list 
