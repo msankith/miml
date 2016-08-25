@@ -1,115 +1,97 @@
 #include<iostream>
-#include"config.h"
-#include"evaluations.h"
-#include"global.h"
+#include "data.h"
+#include "config.h"
+#include <cmath>
 #include "linear.h"
 #include <cmath>
 #include <sstream>
 #include <stdlib.h>
+#include "evaluations.h"
 #include<string.h>
-#include "extraFunctions.h"
 
 using namespace std;
-#define SIZE(A) (sizeof(A)/sizeof(*(A)))
-
 #define MAXBUFLEN 1000000
 #define INF HUGE_VAL
 
-
-struct feature_node **trainingMentionsFeatures;
-int *trainingMentionsPerEntityPair;//trainingMentionsPerEntityPair[#entities];
-double **trainingLabelMatrix;//trainingLabelMatrix[#relations][#entities];
-//Changing to double
-int trainingEntityPairsCount;
-int trainingMentionsCount;
-
-struct feature_node **testingMentionsFeatures;
-int *testingMentionsPerEntityPair;//testingMentionsPerEntityPair[#entities];
-double **testingLabelMatrix;//testingLabelMatrix[#relations][#entities];
-int testingEntityPairsCount;
-int testingMentionsCount;
-
-int numberOfRelations=1;
-
-void loadData(string fname,struct feature_node **vector,int *mentionsPerEntityPair,double **labelMatrix,int *entityPairsCount,int *mentionsCount);
-void coreLogic(int relationNumber,Config *config,Data *data,double *kValues);
-double *getCpe(struct model *relationModel,Data *data);
 Data * loadData(string fname);
-
+void coreLogic(int relationNumber,const Config *config,const Data *data,double *kValues);
+void intializeKValues(double *kValues,double *labels,double val,int size);	
+void initialize(double *array,int size,double val);
+double *getCpe(struct model *relationModel,const Data *data);
 int main()
 {
-	Config config = Config();
-	//loadData(config.trainingFileName,trainingMentionsFeatures,trainingMentionsPerEntityPair,trainingLabelMatrix,&trainingEntityPairsCount,&trainingMentionsCount);
-	//loadData(config.testingFileName,testingMentionsFeatures,testingMentionsPerEntityPair,testingLabelMatrix);
-	// int mentionsCount;
-	// int entityCount;
-	// int *mentionsPerEntityPairCount;
-	// double *cpeMentions;
-	// int numberOfRelations;
-	
-	// struct problem prob;
-
-
+	Config config= Config();
 	Data *dataset = loadData("dataset/reidel_trainSVM.data_bck");
-	cout<<"End of loading"<<endl;
-	dataset->myPrint();
-	//myPrint(trainingMentionsPerEntityPair,4);
-	for(int relationNumber=0;relationNumber<dataset->numberOfRelations;relationNumber++)
+	
+	for(int relationNumber=0;relationNumber<1/*dataset->numberOfRelations*/;relationNumber++)
 	{
 		double *kValues = (double *)malloc(sizeof(double)*dataset->entityCount);
-		//Data *data = new Data(trainingMentionsFeatures,trainingLabelMatrix[relationNumber],trainingMentionsPerEntityPair,trainingEntityPairsCount,trainingMentionsCount); 
-		//Data *data = new Data(relationNumber,dataset);
-		// CPE Mentions should be intiailzed to constant value
 		coreLogic(relationNumber,&config,dataset,kValues);
 	}
-	
+	cout<<"*****End Of Program *****"<<endl;
+	free(dataset->prob.x);
 }
 
 
-void coreLogic(int relationNumber,Config *config,Data *data,double *kValues)
-{
-	//Data data = new Data(mentionsFeatureVector,labelMatrix[relationNumber]);
-	double bestThreshold;
-	struct model *bestRelationModel;
-	double bestFScore=0;
-	double bestK;
-	for(int itrKrange=0;config->k[itrKrange]!=0;itrKrange++)
-	{
-		double initialK = config->k[itrKrange];
-		struct model *relationModel;
-		Evaluation eval = Evaluation();		
-		double threshold;
-		double *cpeMentions=(double *) malloc(sizeof(double)*data->mentionsCount);
-		memset(cpeMentions,0.5,sizeof(double)*data->mentionsCount);
+ void coreLogic(int relationNumber,const Config *config,const Data *data,double *kValues)
+ {
+ 	cout<<endl<<endl<<"--------------------Current Relation Number "<<relationNumber<<" ---------------------\n\n"<<endl;
+ 	double *yLabels = (double *)malloc(sizeof(double)*data->mentionsCount);
+ 	double *cpeMentions=(double *) malloc(sizeof(double)*data->mentionsCount);
+ 	struct problem libProb = data->prob;
+ 	libProb.y = yLabels; 
+ 	Evaluation eval = Evaluation();
+	double threshold;
+	struct model *relationModel;
+	
+ 	for(int itrKrange=0;config->k[itrKrange]!=0;itrKrange++)
+ 	{
+ 		//initialize(kValues,data->entityCount,config->k[itrKrange]);
+ 		intializeKValues(kValues,data->allLabels[relationNumber],config->k[itrKrange],data->entityCount);
+ 		initialize(cpeMentions,data->mentionsCount,0.5);
 		for(int epoch=0;epoch<config->numberOfEpochs;epoch++)
 		{
-			data->setMentionLabels(kValues,cpeMentions);
-			relationModel= train(&data->prob,&config->param);
+			data->setMentionLabels(kValues,cpeMentions,yLabels); // Should we reinitialize the CPE Mentions
+			//data->myPrint(yLabels,data->mentionsCount);
+			// cout<<"------ylabels end-------\n\n";
+			relationModel= train(&libProb,&config->param);
+			free(cpeMentions);
 			cpeMentions= getCpe(relationModel,data); 
 			double *cpeEntityPairs = eval.getMaxCpePerEntityPair(data,cpeMentions);
 			threshold= eval.findBestMacroThreshold(cpeEntityPairs,data,relationNumber);
-			kValues= eval.getKForEntityPairs(data,threshold,cpeMentions);
+			free(kValues);
+			kValues= eval.getKForEntityPairs(data,threshold,cpeMentions,relationNumber);
+			cout<<"Best Threshold\t"<<threshold<<" on relation "<<relationNumber<<endl;
+			free(cpeEntityPairs);
 		}
-		//struct Data *testingData = new Data(testingMentionsFeatures,testingLabelMatrix[relationNumber],testingMentionsPerEntityPair,testingEntityPairsCount,testingMentionsCount) ;
+		free(cpeMentions);
 		cout<<"-------------END OF TRAINING------------  "<<endl;
 		Data *testingData = loadData("dataset/reidel_trainSVM.data");
 		cpeMentions = getCpe(relationModel,testingData);
 		double fScore= eval.getFScore(testingData,threshold,cpeMentions,relationNumber); 
-		cout<<"Relation Number \t"<<relationNumber<<fScore<<endl;
-		if(fScore>bestFScore)
-		{
-			bestFScore=fScore;
-			bestRelationModel=relationModel;
-			bestThreshold=threshold;
-			bestK=initialK;
-		}
+		cout<<"Relation Number \t"<<relationNumber<<"\t Fscore\t"<<fScore<<endl;
+				
+ 	}
+
+ }
+
+
+void intializeKValues(double *kValues,double *labels,double val,int size)
+{
+	for(int i=0;i<size;i++)
+	{
+		if(labels[i]==1)
+			kValues[i]=val;
+		else
+			kValues[i]=0.0;
 	}
 }
 
-
-void loadData(string fname,struct feature_node **trainingMentionsFeatures,int *mentionsPerEntityPair,double **labelMatrix,int *entityPairsCount,int *dataMentionsCount){
+void initialize(double *arr,int size,double val)
+{
+	for(int i=0;i<size;i++)
+		arr[i]=val;
 }
-
 
 Data * loadData(string fname)
 {
@@ -255,8 +237,8 @@ double **featureVector;
 	trainingFeaturesPrb->bias = 0;
 	trainingFeaturesPrb-> x = trainingMentionsFeatures;
 	// cout << totFeature << " and " << featureNo << endl;
-	double *opRes = (double *) calloc(totFeature, sizeof(double));
-	trainingFeaturesPrb -> y = opRes;
+	 //double *opRes = (double *) calloc(totFeature, sizeof(double));
+	 //trainingFeaturesPrb -> y = opRes;
 
 
 	//dataLoad->featureVector = trainingMentionsFeatures;
@@ -268,27 +250,26 @@ double **featureVector;
 	dataLoad->allLabels=trainingLabelMatrix;
 	/***********************************/
 
-	struct parameter param;
+	// struct parameter param;
 
-	param.solver_type = L2R_L2LOSS_SVC_DUAL;
-	param.C = 1;
-	param.eps = INF; // see setting below
-	param.p = 0.1;
-	param.nr_weight = 0;
-	param.weight_label = NULL;
-	param.weight = NULL;
-	param.init_sol = NULL;
+	// param.solver_type = L2R_L2LOSS_SVC_DUAL;
+	// param.C = 1;
+	// param.eps = INF; // see setting below
+	// param.p = 0.1;
+	// param.nr_weight = 0;
+	// param.weight_label = NULL;
+	// param.weight = NULL;
+	// param.init_sol = NULL;
 
 	/***********************************/
 
 
-	cout<<"Training"<<endl;
+	//cout<<"Training"<<endl;
 	return dataLoad;	
 
 }
 
-
-double *getCpe(struct model *relationModel,Data *data)
+double *getCpe(struct model *relationModel,const Data *data)
 {
 	double *prob_estimates=NULL;
 	double *cpeMentions = (double *)malloc(sizeof(double)*data->prob.l);
@@ -297,139 +278,8 @@ double *getCpe(struct model *relationModel,Data *data)
 	{	
 		double predict_label = predict_probability(relationModel,data->prob.x[itr],prob_estimates);
 		cpeMentions[itr]=prob_estimates[0];
+		//cout<<cpeMentions[itr]<<"\t"<<prob_estimates[1]<<endl;
 	}
+	// /cout<<"-----"<<endl;
 	return cpeMentions;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Data *trainingData;
-
-// void print(Data *d)
-// {
-// 	int i=0;
-// 	cout<<"Entity Count   "<<d->entityCount<<endl;
-// 	cout<<"Mentions Count   "<<d->mentionsCount<<endl;
-// 	cout<<"Mentions per entity  "<<endl;
-// 	while(i<d->entityCount)
-// 	{
-// 		cout<<d->mentionsPerEntityPairCount[i++]<<" ";
-// 	}
-// 	cout<<endl;
-
-// 	cout<<"TRUE ENTITY LABELS"<<endl;
-// 	i=0;
-// 	while(i<d->entityCount)
-// 	{
-// 		cout<<d->trueEntityLabels[i++]<<" ";
-// 	}
-// 	cout<<endl;
-
-
-// 	cout<<"-------"<<endl;
-// 	i=0;
-// 	while(i<d->mentionsCount)
-// 		cout<<d->cpeMentions[i++] <<" ";
-
-// 	cout<<endl<<endl<<"CPE MENTIONS"<<endl;
-// 	i=0;
-// 	int itr=0;
-// 	while(i<d->entityCount)
-// 	{
-// 		int j=0;
-// 		while(j<d->mentionsPerEntityPairCount[i])
-// 		{
-// 			cout<<d->cpeMentions[itr++]<<" ";
-// 			j++	;
-// 		}
-// 		i++;
-// 		cout<<"\t";
-// 		//cout<<d->mentionsPerEntityPairCount[i++]<<" ";
-// 	}
-	
-// 	cout<<endl;
-	
-// }
-// int main2()
-// {
-	
-// 	srand (time(NULL));
-
-// 	// Data::entityAllLabels;// = (int *)malloc(sizeof(int *)* 1);
-// 	Data randomData= Data("dataset/reidel_trainSVM.data_bck");
-// 	// print(&randomData);
-
-// 	// Evaluation e = Evaluation();
-
-// 	// double *cpeEntityPairs= e.getMaxCpePerEntityPair(&randomData);
-// 	// double threshold= e.findBestMacroThreshold(cpeEntityPairs,&randomData);
-// 	// double *k = e.getKForEntityPairs(&randomData,threshold);
-
-// 	// double *sortedEntityPairs = e.sortArray(cpeEntityPairs,randomData.entityCount);
-// 	// int i=0;
-// 	// while(i<randomData.entityCount)
-// 	// 	cout<<sortedEntityPairs[i++]<<" ";
-// 	// cout<<endl;
-	
-// 	// cout<<"k values"<<endl;
-// 	// i=0;
-// 	// while(i<randomData.entityCount)
-// 	// 	cout<<k[i++]<<" ";
-// 	// cout<<endl;
-	
-
-// 	// cout<<"Best threshold "<< threshold<<"\t"<<endl<<endl<<endl;
-
-// 	// int mentionsEntityPairCount[]={2,3,2};
-// 	// int trueLabels[]={1,0,1};
-// 	// double cpeMentions[]={1,2,1,8,4,6,7};
-
-// 	// trainingData =new  Data(SIZE(cpeMentions),SIZE(mentionsEntityPairCount),cpeMentions,mentionsEntityPairCount,trueLabels);
-// 	// Evaluation e = Evaluation();
-
-// 	// //e.getMaxCpePerEntityPair(cpeMentions,mentionsEntityPairCount);
-// 	// double *cpeEntityPairs=e.getMaxCpePerEntityPair(trainingData);
-	
-// 	// int *k = (int *)malloc(trainingData->entityCount*sizeof(int));
-// 	// e.findBestMacroThreshold(cpeEntityPairs,trainingData);
-// 	// int *predictedEntityPairsLabel=e.findLabelsAndKValues(cpeMentions,3,trainingData,k);
-
-
-// 	// for(int i=0;i<trainingData->entityCount;i++)
-// 	// {
-// 	// 	//cout<<k[i]<<"  "<<predictedEntityPairsLabel[i]<<endl;
-// 	// }
-
-	
-// 	return 0;
-// }

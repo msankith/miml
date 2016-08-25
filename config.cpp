@@ -8,7 +8,7 @@ using namespace std;
 Config::Config()
 {
 	cout<<"Setting Configuration"<<endl;
-	double initialKValues[]={1};
+	double initialKValues[]={0.5};
 	numberOfEpochs = 1;
 	trainingFileName = "someFileName";
 	testingFileName =  "";
@@ -17,7 +17,7 @@ Config::Config()
 
 	/*Liblinear Parameter Settings */
 
-	param.solver_type = L2R_L2LOSS_SVC_DUAL;
+	param.solver_type = L2R_LR_DUAL;
 	param.C = 1;
 	param.eps = INF; // see setting below
 	param.p = 0.1;
@@ -30,7 +30,7 @@ Config::Config()
 	/*End of Libliner Parameter settings */
 
 	int kSize=sizeof(initialKValues)/sizeof(double);
-	k=(double *)malloc((sizeof(double)*kSize)+1);
+	k=(double *)malloc((sizeof(double)*(kSize+1)));
 	for(int itr=0;itr<kSize;itr++)
 		k[itr]=initialKValues[itr];
 	k[kSize]=0;
