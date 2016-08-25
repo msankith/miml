@@ -2,6 +2,9 @@
 #include<string>
 #include <stdlib.h>
 #include <stdio.h>
+#include <cstring>
+#include <cmath>
+#include<string.h>
 using namespace std;
 #define _DATA_HEADER
 
@@ -63,14 +66,10 @@ public:
 
 
 	Data();
-	Data(string filename);
-	Data(int relationNumber,const Data *data);
-	Data(struct feature_node **features,double *labels,int *mentionsCountPerEntityPair,int pairsCount,int mentionsTotalCount);
-	
-	void myPrint();
-	//Data(string fname,int a);
-	
-	
-	void setMentionLabels(double *kValues,double *cpeMentions);
-	//Data(int mentionsCount,int EntityCount,double *cpeMentions, int *mentionsEntityPairCount,int *trueLabels);
+	void setMentionLabels(const double *kValues,const double *cpeMentions,double *yLabels) const;
+
+	/*Non Functionality Functions */
+	void myPrint(bool printAll) const;
+	void myPrint(double *array,int size) const;
 };
+int probabilityChooser(double key,double *list,int start,int end,int count,int max);
