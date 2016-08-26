@@ -1,5 +1,8 @@
 #include"evaluations.h"
 #include <algorithm>
+#include<fstream>
+#include<string.h>
+#include <sstream>
 
 using namespace std;
 
@@ -40,6 +43,8 @@ double Evaluation::findBestMacroThreshold(const double *cpeEntityPairs,const Dat
 
 	int entityPairsIterator=0;
 	thresholdValues[entityPairsIterator]=sortedCpeEntityPairs[0]-0.01;
+	if(thresholdValues[entityPairsIterator]<0)
+		thresholdValues[entityPairsIterator]=0.0001;
 	for(entityPairsIterator=1; entityPairsIterator<data->entityCount ;  entityPairsIterator++)
 	{
 		thresholdValues[entityPairsIterator]= (sortedCpeEntityPairs[entityPairsIterator-1]+sortedCpeEntityPairs[entityPairsIterator])/2;
@@ -124,7 +129,7 @@ double Evaluation::getFscore(const double *predictedEntityLabels,const double *e
 	recall= (double)TP/(TP+FN);
 	
 	if(precision>0 && recall>0) 
-		fvalue=(precision*recall)/(precision+recall);
+		fvalue=2*(precision*recall)/(precision+recall);
 
 	return fvalue;
 
@@ -164,12 +169,39 @@ double * Evaluation::getKForEntityPairs(const Data *data,double threshold,double
 }
 
 
+std::string to_string2(int i)
+{
+    std::stringstream ss;
+    ss << i;
+    return ss.str();
+}
+
+void myPrintToFileDouble(double *a,double *b,double thresh,int size,int re)
+{
+	std::ofstream ofs;
+  	
+  	//string path = "temp/"+fname+"_"+to_string(relationNumber)+".txt";
+  	string path="temp/predictedLabelsAndTrueLabel_Rel_"+to_string2(re);
+  	ofs.open (path.c_str(), std::ofstream::out );
+	for (int i=0;i<size;i++)
+	{
+		int s=0;
+		if(b[i]>thresh)
+			s=1;
+		// ofs<<i<<"\t"<<a[i]<<"\t"<<s<<"\t"<<thresh<<endl;
+		ofs<<i<<"\t"<<a[i]<<"\t"<<s<<endl;
+	}
+	ofs.close();
+}
+
+
 double Evaluation::getFScore(const Data *data,double threshold,double *cpeMentions,int relationNumber)
 {
 	double *entityCpeMentions = getMaxCpePerEntityPair(data,cpeMentions);	
 	//double *predictedEntityLabels = findLabelsBasedOnEntity(entityCpeMentions,threshold,data);
 	double *predictedEntityPairsLabel = findLabelsBasedOnEntity(entityCpeMentions,threshold,data->entityCount);
 	double tempFscore=getFscore(predictedEntityPairsLabel,data->allLabels[relationNumber],data->entityCount); ///
+	myPrintToFileDouble(data->allLabels[relationNumber],entityCpeMentions,threshold,data->entityCount,relationNumber);
 	free(entityCpeMentions);
 	free(predictedEntityPairsLabel);
 	return tempFscore;

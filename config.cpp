@@ -8,7 +8,7 @@ using namespace std;
 Config::Config()
 {
 	cout<<"Setting Configuration"<<endl;
-	double initialKValues[]={0.5};
+	double initialKValues[]={1};
 	numberOfEpochs = 1;
 	trainingFileName = "someFileName";
 	testingFileName =  "";
@@ -17,10 +17,10 @@ Config::Config()
 
 	/*Liblinear Parameter Settings */
 
-	param.solver_type = L2R_LR_DUAL;
-	param.C = 1;
-	param.eps = INF; // see setting below
-	param.p = 0.1;
+	param.solver_type = L2R_LR;
+	param.C = 2;
+	param.eps = 0.000001; 
+	param.p = 1;
 	param.nr_weight = 0;
 	param.weight_label = NULL;
 	param.weight = NULL;

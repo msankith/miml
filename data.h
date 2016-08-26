@@ -67,7 +67,7 @@ public:
 
 	Data();
 	void setMentionLabels(const double *kValues,const double *cpeMentions,double *yLabels) const;
-
+	double  getWeightsOfCostSensitiveClassifier(int relationNumber) const;
 	/*Non Functionality Functions */
 	void myPrint(bool printAll) const;
 	void myPrint(double *array,int size) const;
