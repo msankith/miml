@@ -30,6 +30,7 @@ struct parameter
 	/* these are for training only */
 	double eps;	        /* stopping criteria */
 	double C;
+	int nr_thread;
 	int nr_weight;
 	int *weight_label;
 	double* weight;
@@ -47,7 +48,6 @@ struct model
 	double bias;
 };
 #endif
-
 struct model* train(const struct problem *prob, const struct parameter *param);
 void cross_validation(const struct problem *prob, const struct parameter *param, int nr_fold, double *target);
 void find_parameter_C(const struct problem *prob, const struct parameter *param, int nr_fold, double start_C, double max_C, double *best_C, double *best_rate);
@@ -73,7 +73,7 @@ const char *check_parameter(const struct problem *prob, const struct parameter *
 int check_probability_model(const struct model *model);
 int check_regression_model(const struct model *model);
 void set_print_string_function(void (*print_func) (const char*));
-
+double getFscore(double *trueLabels,double *predictedLabels,int size);
 #ifdef __cplusplus
 }
 #endif

@@ -25,7 +25,7 @@ Config::Config()
 	param.weight_label = NULL;
 	param.weight = NULL;
 	param.init_sol = NULL;
-
+	param.nr_thread=6;
 
 	/*End of Libliner Parameter settings */
 

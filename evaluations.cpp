@@ -35,7 +35,7 @@ double *  Evaluation::getMaxCpePerEntityPair(const Data *data,const double *cpeM
 	return cpeEntityPairs;
 }
 
-double Evaluation::findBestMacroThreshold(const double *cpeEntityPairs,const Data *data,int relationNumber)
+double Evaluation::findBestMacroThreshold(const double *cpeEntityPairs,const Data *data,int relationNumber,double *fScore)
 {
 	double *thresholdValues= (double * ) malloc((data->entityCount + 1)*sizeof(double)); //+1 coz to include both borders
 
@@ -60,6 +60,7 @@ double Evaluation::findBestMacroThreshold(const double *cpeEntityPairs,const Dat
 		if(tempFscore>maxFscore)
 		{
 			maxFscore=tempFscore;
+
 			bestThreshold= thresholdValues[iterator];
 		}
 		free(predictedEntityPairsLabel);
@@ -67,7 +68,8 @@ double Evaluation::findBestMacroThreshold(const double *cpeEntityPairs,const Dat
 
 	free(thresholdValues);
 	free(sortedCpeEntityPairs);
-	cout<<"Best training Fscore on training data "<<maxFscore<<"\t relationNumber : "<<relationNumber<<endl;
+	// cout<<"Best training Fscore on training data "<<maxFscore<<"\t relationNumber : "<<relationNumber<<endl;
+	*fScore=maxFscore;
 	return bestThreshold;
 }
 
@@ -92,6 +94,34 @@ double * Evaluation::findLabelsBasedOnEntity(const double *cpeMentions,double th
 		else
 			entityPairsLabel[entityPairsIterator]=0;
 	}
+	return entityPairsLabel;
+}
+
+double * Evaluation::findLabelsBasedOnMentions(const double *cpeMentions,double threshold,const Data *data)
+{
+	double *entityPairsLabel = (double * ) malloc(data->entityCount*sizeof(double));
+	int mentionsIterator=0;
+	for(int entityPairsIterator=0; entityPairsIterator<data->entityCount ;  entityPairsIterator++)
+	{
+		int iterator=0;
+		int ktemp=0;
+
+		while(iterator<data->mentionsPerEntityPairCount[entityPairsIterator])
+		{
+			if(cpeMentions[mentionsIterator]>threshold)
+			{
+				ktemp++;
+			}
+			iterator++;
+			mentionsIterator++;
+		}
+		if(ktemp>0)
+			entityPairsLabel[entityPairsIterator]=1;
+		else
+			entityPairsLabel[entityPairsIterator]=0;
+	}
+	
+
 	return entityPairsLabel;
 }
 
@@ -185,11 +215,11 @@ void myPrintToFileDouble(double *a,double *b,double thresh,int size,int re)
   	ofs.open (path.c_str(), std::ofstream::out );
 	for (int i=0;i<size;i++)
 	{
-		int s=0;
-		if(b[i]>thresh)
-			s=1;
+		
 		// ofs<<i<<"\t"<<a[i]<<"\t"<<s<<"\t"<<thresh<<endl;
-		ofs<<i<<"\t"<<a[i]<<"\t"<<s<<endl;
+		if(i!=0)
+			ofs<<endl;
+		ofs<<a[i]<<"\t"<<b[i];
 	}
 	ofs.close();
 }
@@ -197,12 +227,13 @@ void myPrintToFileDouble(double *a,double *b,double thresh,int size,int re)
 
 double Evaluation::getFScore(const Data *data,double threshold,double *cpeMentions,int relationNumber)
 {
-	double *entityCpeMentions = getMaxCpePerEntityPair(data,cpeMentions);	
+	//double *entityCpeMentions = getMaxCpePerEntityPair(data,cpeMentions);	
 	//double *predictedEntityLabels = findLabelsBasedOnEntity(entityCpeMentions,threshold,data);
-	double *predictedEntityPairsLabel = findLabelsBasedOnEntity(entityCpeMentions,threshold,data->entityCount);
+	double *predictedEntityPairsLabel = findLabelsBasedOnMentions(cpeMentions,threshold,data);
 	double tempFscore=getFscore(predictedEntityPairsLabel,data->allLabels[relationNumber],data->entityCount); ///
-	myPrintToFileDouble(data->allLabels[relationNumber],entityCpeMentions,threshold,data->entityCount,relationNumber);
-	free(entityCpeMentions);
+	//myPrintToFileDouble(data->allLabels[relationNumber],entityCpeMentions,threshold,data->entityCount,relationNumber);
+	myPrintToFileDouble(data->allLabels[relationNumber],predictedEntityPairsLabel,threshold,data->entityCount,relationNumber);
+	//free(entityCpeMentions);
 	free(predictedEntityPairsLabel);
 	return tempFscore;
 	///return getFScore(predictedEntityLabels,data->trueEntityLabels,data);
