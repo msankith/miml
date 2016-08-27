@@ -116,7 +116,7 @@ static void print_null(const char *s) {}
 			//find_parameter_C(const struct problem *prob, const struct parameter *param, int nr_fold, double start_C, double max_C, double *best_C, double *best_rate);
 			double bestC;
 			double bestRate;
-			find_parameter_C(&libProb,&param,5,0.5,20,&bestC,&bestRate);
+			//find_parameter_C(&libProb,&param,5,0.5,20,&bestC,&bestRate);
 			cout<<"Best C \t"<<bestC<<endl;
 			param.C= bestC;
 			cout<<param.eps<<"\t solver type"<<param.solver_type<<endl;
