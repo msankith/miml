@@ -92,61 +92,73 @@ static void print_null(const char *s) {}
 	double threshold;
 	struct model *relationModel;
 	struct parameter param;
+	double bestC;
+	double bestRate;
+	double bestThreshold;
+	double bestFscore;
+	double bestWeight;
+	struct model *bestModel;
 	param= config->param;
-	param.nr_weight=0;
-	param.weight_label=(int *)malloc(sizeof(int)*2);
-	param.weight=(double *)malloc(sizeof(double)*2);
-	param.weight_label[0]=0;
-	param.weight_label[1]=1;
-	param.weight[0]=1;
-	param.weight[1]=1;
-
-	param.nr_thread=6;
- 	for(int itrKrange=0;config->k[itrKrange]!=0;itrKrange++)
+	bestFscore=0;
+	for(int itrKrange=0;config->k[itrKrange]!=0;itrKrange++)
  	{
- 		//initialize(kValues,data->entityCount,config->k[itrKrange]);
+
  		intializeKValues(kValues,data->allLabels[relationNumber],config->k[itrKrange],data->entityCount);
  		initialize(cpeMentions,data->mentionsCount,0.5);
-		for(int epoch=0;epoch<config->numberOfEpochs;epoch++)
-		{
-			// printToFile(kValues,data->entityCount,"initial_Kvalues_"+to_string(epoch),relationNumber);
-			data->setMentionLabels(kValues,cpeMentions,yLabels); // Should we reinitialize the CPE Mentions
-			// double w = data->getWeightsOfCostSensitiveClassifier(relationNumber);
-			// param.weight[0]=w;
-			// param.weight[1]=100*w;
-			//find_parameter_C(const struct problem *prob, const struct parameter *param, int nr_fold, double start_C, double max_C, double *best_C, double *best_rate);
-			double bestC;
-			double bestRate;
-			find_parameter_C(&libProb,&param,5,0.5,20,&bestC,&bestRate);
-			cout<<"Best C \t"<<bestC<<endl;
-			//param.C= 12;
-			cout<<param.eps<<"\t solver type"<<param.solver_type<<endl;
-			//set_print_string_function(&print_null);
-			relationModel= train(&libProb,&param);
-			free(cpeMentions);
-			cpeMentions= getCpe(relationModel,data,false); 
-			double *cpeEntityPairs = eval.getMaxCpePerEntityPair(data,cpeMentions);
-			double tempfScore;
-			threshold= eval.findBestMacroThreshold(cpeEntityPairs,data,relationNumber,&tempfScore);
-			free(kValues);
-			
-			kValues= eval.getKForEntityPairs(data,threshold,cpeMentions,relationNumber);
-			free(cpeEntityPairs);
-
-		}
-		free(cpeMentions);
-		
-		cout<<"******************************"<<endl;
-		Data *testingData = loadData("dataset/testSVM.pos_r.data");
-		cpeMentions = getCpe(relationModel,testingData,false);
-		double fScore= eval.getFScore(testingData,threshold,cpeMentions,relationNumber); 
-		cout<<"Best Threshold\t"<<threshold<<endl;
-		cout<<"Relation Number \t"<<relationNumber<<"\t Fscore\t"<<fScore<<endl;
-		fScore_all[relationNumber]=fScore;
-		threshold_all[relationNumber]=threshold;
-		cout<<"\n-----------END OF ONE RELATION--------------"<<endl;
+		for(double weight=config->minCost;weight<config->maxCost;weight+=config->stepSize)
+		{	
+			for(int epoch=0;epoch<config->numberOfEpochs;epoch++)
+			{
+				// printToFile(kValues,data->entityCount,"initial_Kvalues_"+to_string(epoch),relationNumber);
+				data->setMentionLabels(kValues,cpeMentions,yLabels); // Should we reinitialize the CPE Mentions
+				// double w = data->getWeightsOfCostSensitiveClassifier(relationNumber);
+				 if(config->findBestCosts)
+				 {
+					 param.weight[0]=weight;
+					 param.weight[1]=1-weight;
+					 cout<<"cost based learnner.Current Cost "<< weight<<endl;
+				 }
+				//find_parameter_C(const struct problem *prob, const struct parameter *param, int nr_fold, double start_C, double max_C, double *best_C, double *best_rate);
+				if(config->findBestC)
+				{
+					find_parameter_C(&libProb,&param,config->nr_folds,config->C_Min,config->C_Max,&bestC,&bestRate);
+					cout<<"Best C \t"<<bestC<<endl;
+				}
+				//param.C= 12;
+				//cout<<param.eps<<"\t solver type"<<param.solver_type<<endl;
+				set_print_string_function(&print_null);
+				relationModel= train(&libProb,&param);
+				free(cpeMentions);
+				cpeMentions= getCpe(relationModel,data,false); 
+				double *cpeEntityPairs = eval.getMaxCpePerEntityPair(data,cpeMentions);
+				double tempfScore;
+				threshold= eval.findBestMacroThreshold(cpeEntityPairs,data,relationNumber,&tempfScore);
+				if(tempfScore>bestFscore)
+				{
+					bestFscore=tempfScore;
+					bestThreshold=threshold;
+					bestModel=relationModel;
+					bestWeight=weight;
+				}
+				free(kValues);
 				
- 	}
+				kValues= eval.getKForEntityPairs(data,threshold,cpeMentions,relationNumber);
+				free(cpeEntityPairs);
+			}
+		}
+	}	
+	free(cpeMentions);
+	cout<<"***************TESTING***************"<<endl;
+	Data *testingData = loadData("dataset/testSVM.pos_r.data");
+	cpeMentions = getCpe(bestModel,testingData,false);
+	double fScore= eval.getFScore(testingData,bestThreshold,cpeMentions,relationNumber); 
+	cout<<"Best Threshold\t"<<bestThreshold<<"Best weight "<<bestWeight<<endl;
+	cout<<"Relation Number \t"<<relationNumber<<"\t Fscore\t"<<fScore<<endl;
+	fScore_all[relationNumber]=fScore;
+	threshold_all[relationNumber]=threshold;
+	cout<<"\n-----------END OF ONE RELATION--------------"<<endl;
+				
+ 	
 
  }
 

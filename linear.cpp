@@ -2778,7 +2778,8 @@ void find_parameter_C(const problem *prob, const parameter *param, int nr_fold, 
 			best_fscore=currentFscore;
 		}
 
-		info("log2c=%7.2f\trate=%g\n",log(param1.C)/log(2.0),100.0*current_rate);
+		info("log2c=%7.2f\tF Score=%g\n",log(param1.C)/log(2.0),100.0*currentFscore);
+		// info("log2c=%7.2f\trate=%g\n",log(param1.C)/log(2.0),100.0*current_rate);
 		num_unchanged_w++;
 		if(num_unchanged_w == 3)
 			break;

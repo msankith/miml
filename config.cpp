@@ -15,17 +15,49 @@ Config::Config()
 	outputFileDirectory="/home/ankith/temp/";
 
 
-	/*Liblinear Parameter Settings */
 
+	/* Find Best C Settings */
+	findBestC=false;
+	C_Min=0.5;
+	C_Max=32;
+	nr_folds=5;
+	param.C = 16; /* if findBestC is false , this param.C value will be taken*/
+	
+
+	/*Liblinear Parameter Settings */
 	param.solver_type = L2R_LR;
-	param.C = 2;
+	
 	param.eps = 0.000001; 
 	param.p = 1;
 	param.nr_weight = 0;
-	param.weight_label = NULL;
-	param.weight = NULL;
 	param.init_sol = NULL;
 	param.nr_thread=6;
+	
+
+	param.weight_label=(int *)malloc(sizeof(int)*2);
+	param.weight=(double *)malloc(sizeof(double)*2);
+	
+	/* Cost sensitive Classifier Settings */
+	costSensitiveClassifier = false;
+	findBestCosts=false;
+	minCost=0.1;
+	maxCost=1;
+	stepSize=0.1;
+	param.nr_weight=0; 
+		/* Default Weights of sensitive classifier */
+	if(findBestCosts==false){
+		param.weight[0]=0.1; /* Default costs */ 
+		param.weight[1]=0.9;
+		param.nr_weight=2;	
+		stepSize=maxCost;
+	}
+	if(costSensitiveClassifier)
+		param.nr_weight=2;	
+	
+	param.weight_label[0]=0;
+	param.weight_label[1]=1;
+	
+	/* End Cost sensitive Classifier Settings */
 
 	/*End of Libliner Parameter settings */
 
