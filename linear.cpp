@@ -8,6 +8,7 @@
 #include "linear.h"
 #include "tron.h"
 #include <omp.h>
+
 typedef signed char schar;
 template <class T> static inline void swap(T& x, T& y) { T t=x; x=y; y=t; }
 #ifndef min
@@ -2638,7 +2639,7 @@ void cross_validation(const problem *prob, const parameter *param, int nr_fold, 
 	free(perm);
 }
 
-void find_parameter_C(const problem *prob, const parameter *param, int nr_fold, double start_C, double max_C, double *best_C, double *best_rate)
+void find_parameter_C(const problem *prob, const parameter *param, int nr_fold, double start_C, double max_C, double *best_C, double *best_rate,int *mentionsPerEntityPairCount,int entityCount,double *trueEntityLabels)
 {
 	// variables for CV
 	int i;
@@ -2767,7 +2768,7 @@ void find_parameter_C(const problem *prob, const parameter *param, int nr_fold, 
 			if(target[i] == prob->y[i])
 				++total_correct;
 		double current_rate = (double)total_correct/prob->l;
-		double currentFscore = getFscore(prob->y,target,prob->l);
+		double currentFscore = getFscore(prob->y,target,prob->l,mentionsPerEntityPairCount,entityCount,trueEntityLabels);
 		std::cout<<"Fscore : "<<currentFscore<<"\t accuracy : "<<current_rate<<std::endl;
 		//if(current_rate > *best_rate)
 		if(currentFscore>best_fscore)
@@ -2800,8 +2801,12 @@ void find_parameter_C(const problem *prob, const parameter *param, int nr_fold, 
 	free(prev_w);
 	free(subprob);
 }
-double getFscore(double *trueLabels,double *predictedLabels,int size)
+
+double getFscore(double *trueMentionLabels,double *predictedMentionLabels,int size,int *mentionsPerEntityPairCount,int entityCount,double *trueEntityLabels)
 {
+	double *trueLabels=trueEntityLabels;
+	int *predictedLabels=findEntityLabels(mentionsPerEntityPairCount,entityCount,predictedMentionLabels);
+
 	double precision;
 	double recall;
 	double beta=0.5;
@@ -2811,9 +2816,9 @@ double getFscore(double *trueLabels,double *predictedLabels,int size)
 	int TP=0;
 	int FP=0;
 	int FN=0;
-
-	for(int i=0;i<size;i++)
+	for(int i=0;i<entityCount;i++)
 	{
+
 		if(trueLabels[i]==1 && predictedLabels[i]==1)
 			TP++;
 		else if (trueLabels[i]==1 && predictedLabels[i]==0)
@@ -2821,6 +2826,7 @@ double getFscore(double *trueLabels,double *predictedLabels,int size)
 		else if (trueLabels[i]==0 && predictedLabels[i]==1)
 			FP++;
 	}
+	
 	double fvalue=0;
 	
 	if(TP==0)
@@ -2834,6 +2840,30 @@ double getFscore(double *trueLabels,double *predictedLabels,int size)
 	return fvalue;
 
 }
+
+int *  findEntityLabels(const int *mentionsPerEntityPairCount,int entityCount,const double *mentionLabels)
+{
+
+	int *cpeEntityPairs= (int *) malloc(entityCount*sizeof(int));
+	int mentionsIterator=0;
+	for(int entityPairsIterator=0; entityPairsIterator<entityCount ;  entityPairsIterator++)
+	{
+		int iterator=0;
+		int maxCpe=0;
+		while(iterator<mentionsPerEntityPairCount[entityPairsIterator])
+		{
+		//	cout<<data->cpeMentions[mentionsIterator]<<endl;
+			if(mentionLabels[mentionsIterator]==1)
+				maxCpe=1;
+			mentionsIterator++;
+			iterator++;
+		}
+		cpeEntityPairs[entityPairsIterator]=maxCpe;
+		//cout<<endl<<endl;
+	}	
+	return cpeEntityPairs;
+}
+
 
 double predict_values(const struct model *model_, const struct feature_node *x, double *dec_values)
 {

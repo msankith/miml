@@ -122,8 +122,9 @@ static void print_null(const char *s) {}
 				//find_parameter_C(const struct problem *prob, const struct parameter *param, int nr_fold, double start_C, double max_C, double *best_C, double *best_rate);
 				if(config->findBestC)
 				{
-					find_parameter_C(&libProb,&param,config->nr_folds,config->C_Min,config->C_Max,&bestC,&bestRate);
+					find_parameter_C(&libProb,&param,config->nr_folds,config->C_Min,config->C_Max,&bestC,&bestRate,data->mentionsPerEntityPairCount,data->entityCount,data->allLabels[relationNumber]);
 					cout<<"Best C \t"<<bestC<<endl;
+					param.C=bestC;
 				}
 				//param.C= 12;
 				//cout<<param.eps<<"\t solver type"<<param.solver_type<<endl;

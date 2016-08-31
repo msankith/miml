@@ -50,7 +50,7 @@ struct model
 #endif
 struct model* train(const struct problem *prob, const struct parameter *param);
 void cross_validation(const struct problem *prob, const struct parameter *param, int nr_fold, double *target);
-void find_parameter_C(const struct problem *prob, const struct parameter *param, int nr_fold, double start_C, double max_C, double *best_C, double *best_rate);
+void find_parameter_C(const struct problem *prob, const struct parameter *param, int nr_fold, double start_C, double max_C, double *best_C, double *best_rate,int *mentionsPerEntityPairCount,int entityCount,double *trueEntityLabels);
 
 double predict_values(const struct model *model_, const struct feature_node *x, double* dec_values);
 double predict(const struct model *model_, const struct feature_node *x);
@@ -73,7 +73,11 @@ const char *check_parameter(const struct problem *prob, const struct parameter *
 int check_probability_model(const struct model *model);
 int check_regression_model(const struct model *model);
 void set_print_string_function(void (*print_func) (const char*));
-double getFscore(double *trueLabels,double *predictedLabels,int size);
+
+
+double getFscore(double *trueLabels,double *predictedLabels,int size,int *mentionsPerEntityPairCount,int entityCount,double *trueEntityLabels);
+int * findEntityLabels(const int *mentionsPerEntityPairCount,int entityCount,const double *mentionLabels);
+
 #ifdef __cplusplus
 }
 #endif
