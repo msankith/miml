@@ -53,6 +53,8 @@ Config::Config()
 	}
 	if(costSensitiveClassifier)
 		param.nr_weight=2;	
+	else
+		param.nr_weight=0; 
 	
 	param.weight_label[0]=0;
 	param.weight_label[1]=1;

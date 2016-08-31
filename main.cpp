@@ -57,7 +57,8 @@ double *threshold_all;
 int main()
 {
 	Config config= Config();
-	Data *dataset = loadData("dataset/reidel_trainSVM.data_bck");
+	 Data *dataset = loadData("dataset/reidel_trainSVM.data_bck");
+	//Data *dataset = loadData("/home/ankith/learning/mtp/code/experiment_miml_c/code_experiments/dataset/reidel_trainSVM.data_bck_modifiedDataset_25");
 	fScore_all = (double *) malloc(sizeof(double)*dataset->numberOfRelations);
 	threshold_all = (double *) malloc(sizeof(double)*dataset->numberOfRelations);
 	
@@ -152,7 +153,7 @@ static void print_null(const char *s) {}
 	Data *testingData = loadData("dataset/testSVM.pos_r.data");
 	cpeMentions = getCpe(bestModel,testingData,false);
 	double fScore= eval.getFScore(testingData,bestThreshold,cpeMentions,relationNumber); 
-	cout<<"Best Threshold\t"<<bestThreshold<<"Best weight "<<bestWeight<<endl;
+	cout<<"Best Threshold\t"<<bestThreshold<<"\tBest weight "<<bestWeight<<endl;
 	cout<<"Relation Number \t"<<relationNumber<<"\t Fscore\t"<<fScore<<endl;
 	fScore_all[relationNumber]=fScore;
 	threshold_all[relationNumber]=threshold;
