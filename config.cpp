@@ -12,7 +12,7 @@ Config::Config()
 	numberOfEpochs = 1;
 	trainingFileName = "someFileName";
 	testingFileName =  "";
-	outputFileDirectory="/home/ankith/temp/";
+	outputFileDirectory="/home/ankith/learning/mtp/code/miml_c/temp/";
 
 
 
@@ -21,7 +21,7 @@ Config::Config()
 	C_Min=0.5;
 	C_Max=32;
 	nr_folds=5;
-	param.C = 16; /* if findBestC is false , this param.C value will be taken*/
+	param.C = 8; /* if findBestC is false , this param.C value will be taken*/
 	
 
 	/*Liblinear Parameter Settings */
@@ -62,6 +62,31 @@ Config::Config()
 	/* End Cost sensitive Classifier Settings */
 
 	/*End of Libliner Parameter settings */
+
+
+	/* Lib SVM Settings */
+
+	isSVM=true;
+
+	param_svm.svm_type = C_SVC;
+	param_svm.kernel_type = RBF;
+	param_svm.degree = 3;
+	param_svm.gamma = 0;	// 1/num_features
+	param_svm.coef0 = 0;
+	param_svm.nu = 0.5;
+	param_svm.cache_size = 1000;
+	param_svm.C = 4;
+	param_svm.eps = 1e-3;
+	param_svm.p = 0.1;
+	param_svm.shrinking = 1;
+	param_svm.probability = 1;
+	param_svm.nr_weight = 0;
+	param_svm.weight_label = NULL;
+	param_svm.weight = NULL;
+
+
+	/*ENd  LibSVM settings */ 
+
 
 	int kSize=sizeof(initialKValues)/sizeof(double);
 	k=(double *)malloc((sizeof(double)*(kSize+1)));

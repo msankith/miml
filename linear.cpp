@@ -2771,7 +2771,7 @@ void find_parameter_C(const problem *prob, const parameter *param, int nr_fold, 
 		double currentFscore = getFscore(prob->y,target,prob->l,mentionsPerEntityPairCount,entityCount,trueEntityLabels);
 		std::cout<<"Fscore : "<<currentFscore<<"\t accuracy : "<<current_rate<<std::endl;
 		//if(current_rate > *best_rate)
-		if(currentFscore>best_fscore)
+		if(currentFscore>=best_fscore)
 		{
 			*best_C = param1.C;
 			// *best_rate = current_rate;

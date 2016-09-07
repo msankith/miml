@@ -1,7 +1,7 @@
 #include<iostream>
 #include<string>
 #include<stdlib.h>
-
+#include "svm.h"
 
 #include "linear.h"
 using namespace std;
@@ -27,10 +27,11 @@ public:
 
 	
 	struct parameter param;
+	struct svm_parameter param_svm;
 	string trainingFileName;
 	string testingFileName;
 	string outputFileDirectory;
-	
+	bool isSVM;
 	
 	Config();
 	Config(double k[],int numberOfEpochs,string trainingDataset,string testingDataset);

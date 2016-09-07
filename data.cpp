@@ -13,12 +13,13 @@ void initializer(double *arr,int size,double val){
 		arr[i]=val;
 }
 
-void Data::setMentionLabels(const double *kValues,const double *cpeMentions,double *yLabels) const
+void Data::setMentionLabels(const double *kValues,const double *cpeMentions,double *yLabels,int relationNumber) const
 {
 	int *mentionsPerEntityPair= this->mentionsPerEntityPairCount;
 	srand (time(NULL));
 	
 	int max=0;
+	/* Get maximum mention per entity pair. TO intiailize dynamic arrays*/
 	for(int z=0;z<this->entityCount;z++){
 		if(max<mentionsPerEntityPair[z])
 			max=mentionsPerEntityPair[z];
@@ -28,10 +29,12 @@ void Data::setMentionLabels(const double *kValues,const double *cpeMentions,doub
 	double *randomTillNow =(double *)malloc(sizeof(double)*maxSize); // to track which all selected
 	double *itrIncrementor =(double *)malloc(sizeof(double)*maxSize); // for recaluclating the adjusted iterative pointer after removing the selected mention from the list 
 	
+	double *lables = this->allLabels[relationNumber];
 	
 	
 	initializer(yLabels,mentionsCount,0);
 	
+	int inCorrectlyClassified=0;
 	
 	int mentionsTrack=0;
 	for(int itrEntity=0;itrEntity<entityCount;itrEntity++)
@@ -48,21 +51,42 @@ void Data::setMentionLabels(const double *kValues,const double *cpeMentions,doub
 		{
 			tempArray[itrMentions]=tempArray[itrMentions-1]+cpeMentions[mentionsTrack+itrMentions];
 		}
-		int k =(int) round( (kValues[itrEntity]*mentionsSize));
+
+		int k =(int) round((kValues[itrEntity]*mentionsSize));
 		if(kValues[itrEntity]==1){
-		// cout<<endl<<"Mentions Track \t"<<mentionsTrack<<endl;
-		// cout<<"Mentions on entity \t"<<mentionsSize<<"\tk to set\t"<<k<<endl;;
-		//Set k mentions probablistically
+		//Set all k mentions 
 			for(int set=0;set<mentionsSize;set++)
 				yLabels[mentionsTrack+set]=1;
 		}
 		else 
 		{
+			bool checkIfKZero=false;
+			if(k==0 && lables[itrEntity]==1){
+				// k=(mentionsSize/3)==0?1:mentionsSize/3;
+				 k=1;
+				checkIfKZero=true;
+				if(kValues[itrEntity]==0)
+					inCorrectlyClassified++;
+			}
 			for(int set=0;set<k;set++)
 			{
+
 				double randomNumber = ((double) rand() / (RAND_MAX))*tempArray[itrMentions-1];
 				int ptr= probabilityChooser(randomNumber,tempArray,0,mentionsSize-1,0,mentionsSize);
-				randomTillNow[ptr]=1;
+				
+				if(k==1&&checkIfKZero==true)
+				{
+					double tempMaxCpe=0;
+
+					for(int tempItr=0;tempItr<mentionsSize;tempItr++){
+						if(cpeMentions[mentionsTrack+tempItr] > tempMaxCpe){
+							tempMaxCpe=cpeMentions[mentionsTrack+tempItr];
+							ptr=tempItr;
+						}
+					}
+				//	cout<<itrEntity<<"\t"<<ptr<<endl;
+				}
+				randomTillNow[ptr]=1;				
 				int mentionToSet=ptr+itrIncrementor[ptr];
 				//cout<<mentionsTrack+mentionToSet<<"\t";
 				yLabels[mentionsTrack+mentionToSet]=1;
@@ -95,6 +119,14 @@ void Data::setMentionLabels(const double *kValues,const double *cpeMentions,doub
 		}
 		mentionsTrack+=mentionsPerEntityPair[itrEntity]; // mentionsTrack ll point to iterator  of entity pairs first mention.	
 	}
+
+	int trueLabelsCount=0;
+	for(int itr=0;itr<entityCount;itr++)
+	{
+		if(lables[itr]==1)
+			trueLabelsCount++;
+	}
+	cout<<"True Label Count "<<trueLabelsCount<<"\t Labels Incorrectly Classified\t"<<inCorrectlyClassified<<endl;
 	free(tempArray);
 	free(randomTillNow);
 	free(itrIncrementor);

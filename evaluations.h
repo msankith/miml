@@ -22,13 +22,14 @@ class Evaluation {
 
 	// double * sortArray(const double *cpeEntityPairs,int SIZE);
 	double *  getMaxCpePerEntityPair(const Data *data,const double *cpeMentions);
-	double  findBestMacroThreshold(const double *cpeEntityPairs,const Data *data,int relationNumber,double *fscore);
+	double  findBestMacroThreshold(const double *cpeEntityPairs,const Data *data,int relationNumber,double *fscore,const Data *validationData,const double *cpeValidMentions);
 	double * sortArray(const double *cpeEntityPairs,int SIZE);
 	double * findLabelsBasedOnEntity(const double *cpeEntityPairs,double bestThreshold,int entityCount);
 	double * findLabelsBasedOnMentions(const double *cpeMentions,double threshold,const Data *data);
-	double getFscore(const double *predictedEntityLabels,const double *entityLabels, int entityCount);
 	double * getKForEntityPairs(const Data *data,double Threshold,double *cpeMentions,int relationNumber);
-	double getFScore(const Data *data,double threshold,double *cpeMentions,int relationNumber);
+	double getFScore(const Data *data,double threshold,const double *cpeMentions,int relationNumber,double beta);
+	double getFscore(const double *predictedEntityLabels,const double *entityLabels, int entityCount,double beta);
+	// 		getFscore(validationData,thresholdValues[iterator],cpeValidMentions,relationNumber,1)
 	// double  findBestMacroThreshold(const double *cpeEntityPairs,const Data *data,int relationNumber);
 	// double * getKForEntityPairs(const Data *data,double Threshold,double *cpeMentions);
 	// double getFscore(const double *predictedEntityLabels,const double *entityLabels,const Data *data);
