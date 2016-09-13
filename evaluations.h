@@ -29,6 +29,7 @@ class Evaluation {
 	double * getKForEntityPairs(const Data *data,double Threshold,double *cpeMentions,int relationNumber);
 	double getFScore(const Data *data,double threshold,const double *cpeMentions,int relationNumber,double beta);
 	double getFscore(const double *predictedEntityLabels,const double *entityLabels, int entityCount,double beta);
+	double getAccuracy(const double *predictedEntityLabels,const double *entityLabels,int entityCount);
 	// 		getFscore(validationData,thresholdValues[iterator],cpeValidMentions,relationNumber,1)
 	// double  findBestMacroThreshold(const double *cpeEntityPairs,const Data *data,int relationNumber);
 	// double * getKForEntityPairs(const Data *data,double Threshold,double *cpeMentions);

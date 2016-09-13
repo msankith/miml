@@ -42,6 +42,7 @@ double Evaluation::findBestMacroThreshold(const double *cpeEntityPairs,const Dat
 	double *sortedCpeEntityPairs= sortArray(cpeEntityPairs,data->entityCount);
 
 	int entityPairsIterator=0;
+	/*
 	thresholdValues[entityPairsIterator]=sortedCpeEntityPairs[0]-0.01;
 	if(thresholdValues[entityPairsIterator]<0)
 		thresholdValues[entityPairsIterator]=0.0001;
@@ -50,7 +51,13 @@ double Evaluation::findBestMacroThreshold(const double *cpeEntityPairs,const Dat
 		thresholdValues[entityPairsIterator]= (sortedCpeEntityPairs[entityPairsIterator-1]+sortedCpeEntityPairs[entityPairsIterator])/2;
 	}
 	thresholdValues[entityPairsIterator]= sortedCpeEntityPairs[entityPairsIterator -1]+0.01;
+	*/
 
+	for(entityPairsIterator=0; entityPairsIterator<data->entityCount ;  entityPairsIterator++)
+	{
+		thresholdValues[entityPairsIterator]= sortedCpeEntityPairs[entityPairsIterator];
+	}
+	thresholdValues[entityPairsIterator]= sortedCpeEntityPairs[entityPairsIterator-1];
 	double maxFscore=0;
 	double bestThreshold=0;
 
@@ -129,6 +136,18 @@ double * Evaluation::findLabelsBasedOnMentions(const double *cpeMentions,double 
 }
 
 
+double Evaluation::getAccuracy(const double *predictedEntityLabels,const double *entityLabels,int entityCount)
+{
+	int truePredictives=0;
+	for(int i=0;i<entityCount;i++)
+	{
+		if(predictedEntityLabels[i]==entityLabels[i])
+			truePredictives++;
+	}
+	return (double)truePredictives/(double)entityCount;
+}
+
+
 double Evaluation::getFscore(const double *predictedEntityLabels,const double *entityLabels, int entityCount,double beta)
 {
 	double precision;
@@ -139,6 +158,7 @@ double Evaluation::getFscore(const double *predictedEntityLabels,const double *e
 	int TP=0;
 	int FP=0;
 	int FN=0;
+	int TN=0;
 	for(int entityPairsIterator=0; entityPairsIterator<entityCount ;  entityPairsIterator++)
 	{
 		
@@ -151,6 +171,8 @@ double Evaluation::getFscore(const double *predictedEntityLabels,const double *e
 		}else if(predictedEntityLabels[entityPairsIterator]==0 &&entityLabels[entityPairsIterator]==1)
 		{
 			FN++;
+		}else{
+			TN++;
 		}
 	}
 	double fvalue=0;
@@ -252,8 +274,11 @@ double Evaluation::getFScore(const Data *data,double threshold,const double *cpe
 	double *predictedEntityPairsLabel = findLabelsBasedOnMentions(cpeMentions,threshold,data);
 	double tempFscore=getFscore(predictedEntityPairsLabel,data->allLabels[relationNumber],data->entityCount,beta); ///
 	//myPrintToFileDouble(data->allLabels[relationNumber],entityCpeMentions,threshold,data->entityCount,relationNumber);
+	double accuracy= getAccuracy(predictedEntityPairsLabel,data->allLabels[relationNumber],data->entityCount);
 	myPrintToFileDouble(data->allLabels[relationNumber],predictedEntityPairsLabel,threshold,data->entityCount,relationNumber);
 	//free(entityCpeMentions);
+	
+	cout<<"---> relationNumber "<<relationNumber<<"\t Accuracy "<<accuracy<<endl;
 	free(predictedEntityPairsLabel);
 	return tempFscore;
 	///return getFScore(predictedEntityLabels,data->trueEntityLabels,data);
